@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -O2 -Wall -I .
 LIB = -lpthread
 
-all: echoclient echoserver
+all: echoclient echoserveri
 
 csapp.o: csapp.c csapp.h
 	$(CC) $(CFLAGS) -c csapp.c
@@ -10,11 +10,11 @@ csapp.o: csapp.c csapp.h
 echoclient: echoclient.c csapp.o
 	$(CC) $(CFLAGS) -o echoclient echoclient.c csapp.o $(LIB)
 
-echoserver: echoserveri.c csapp.o
-	$(CC) $(CFLAGS) -o echoserver echoserveri.c csapp.o $(LIB)
+echoserveri: echoserveri.c csapp.o
+	$(CC) $(CFLAGS) -o echoserveri echoserveri.c csapp.o $(LIB)
         
 clean:
-	rm -f *.o echoclient echoserver *~
+	rm -f *.o echoclient echoserveri *~
 
 	
 

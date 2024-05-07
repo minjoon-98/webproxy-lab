@@ -1,5 +1,6 @@
 #include "csapp.h"
 
+// 도메인 이름과 연관된 IP 주소 반환
 int main(int argc, char **argv)
 {
     struct addrinfo *p, *listp, hints;
