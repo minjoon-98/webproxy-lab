@@ -185,9 +185,10 @@ void doit(int fd) // 한 개의 HTTP 트랜잭션을 처리한다
   char filename[MAXLINE], cgiargs[MAXLINE];                           // 파일 경로 및 CGI 인자를 저장할 변수들
   rio_t rio;                                                          // Rio 버퍼 구조체
 
-  /* Read request line and headers */ /* 요청 라인 및 헤더 읽기 */
-  Rio_readinitb(&rio, fd);            // Rio 버퍼 초기화
-  Rio_readlineb(&rio, buf, MAXLINE);  // 요청 라인 읽기
+  /* Read request line and headers */       /* 요청 라인 및 헤더 읽기 */
+  Rio_readinitb(&rio, fd);                  // Rio 버퍼 초기화
+  if (!(Rio_readlineb(&rio, buf, MAXLINE))) // 요청을 받아오지 못했다면 바로 return하여 doit을 종료
+    return;                                 // 무한루프 문제 해결...?
   printf("Request headers:\n");
   printf("%s", buf);                             // 읽은 요청 헤더 출력
   sscanf(buf, "%s %s %s", method, uri, version); // 요청 라인 파싱
@@ -326,7 +327,7 @@ void serve_static(int fd, char *filename, int filesize, char *method, char *vers
 
   /* Send response body to client */
   srcfd = Open(filename, O_RDONLY, 0); // O_RDONLY 파일을 읽기 전용으로 열려고 할 때 사용하는 플래그
-  // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0); // PROT_READ 페이지에 대한 읽기 권한을 허용하는 플래그 // MAP_PRIVATE 매핑된 메모리 영역이 다른 프로세스와 공유되지 않음을 지정하는 플래그
+  // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, rcfsd, 0); // PROT_READ 페이지에 대한 읽기 권한을 허용하는 플래그 // MAP_PRIVATE 매핑된 메모리 영역이 다른 프로세스와 공유되지 않음을 지정하는 플래그
   srcp = (char *)Malloc(filesize);  /* 11.9 */
   Rio_readn(srcfd, srcp, filesize); /* 11.9 */
   Close(srcfd);
@@ -366,7 +367,9 @@ void get_filetype(char *filename, char *filetype) // MIME 타입 확인 후 반�
   else if (strstr(filename, ".jpg"))
     strcpy(filetype, "image/jpeg");
   else if (strstr(filename, ".mpeg")) /* 11.7 */
-    strcpy(filetype, "image/mpeg");
+    strcpy(filetype, "video/mpeg");
+  else if (strstr(filename, ".mp4")) /* 11.7 */
+    strcpy(filetype, "video/mp4");
   else
     strcpy(filetype, "text/plain");
 }

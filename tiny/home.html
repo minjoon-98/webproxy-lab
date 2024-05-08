@@ -1,7 +1,51 @@
-<html>
-<head><title>test</title></head>
-<body> 
-<img align="middle" src="godzilla.gif">
-Dave O'Hallaron
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .content {
+            text-align: center;
+            max-width: 80%;
+            /* Adjust as needed */
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            /* Add some space between image and text */
+        }
+
+        video {
+            max-width: 100%;
+            height: auto;
+            max-height: 400px;
+            /* Adjust height as needed */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <img src="godzilla.gif" alt="Godzilla">
+        <p>Dave O'Hallaron</p>
+        <video muted autoplay loop>
+            <source src="puppy.mp4" type="video/mp4">
+            <strong>Your browser does not support the video tag.</strong>
+        </video>
+    </div>
 </body>
+
 </html>
