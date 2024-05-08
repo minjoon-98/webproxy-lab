@@ -9,120 +9,126 @@
 #include "csapp.h"
 
 /*
- * doit - Handle client request
+ * doit - 클라이언트 요청을 처리합니다.
  *
- * Handle a client request by parsing the request line, reading and
- * processing the request headers, parsing the URI, serving static
- * or dynamic content based on the request, and sending the response
- * to the client.
+ * 클라이언트 요청을 파싱하고, 요청 헤더를 읽고 처리하며,
+ * URI를 파싱하고, 요청에 따라 정적 또는 동적 콘텐츠를 제공하고,
+ * 응답을 클라이언트에게 보냅니다.
  *
- * Parameters:
- *   fd: File descriptor of the client connection
+ * 매개변수:
+ *   fd: 클라이언트 연결의 파일 디스크립터
  *
- * Returns:
- *   None
+ * 반환값:
+ *   없음
  */
 void doit(int fd);
 
 /*
- * read_requesthdrs - Read and process HTTP request headers
+ * read_requesthdrs - HTTP 요청 헤더를 읽고 처리합니다.
  *
- * Read and process the HTTP request headers from the client.
- * This function is responsible for reading the request headers
- * from the client connection and processing them as needed.
+ * 클라이언트로부터 HTTP 요청 헤더를 읽고 처리합니다.
+ * 이 함수는 클라이언트 연결로부터 요청 헤더를 읽어들이고 필요한 처리를 수행합니다.
  *
- * Parameters:
- *   rp: Pointer to a rio_t structure for reading from the client connection
+ * 매개변수:
+ *   rp: 클라이언트 연결에서 읽기 위한 rio_t 구조체의 포인터
  *
- * Returns:
- *   None
+ * 반환값:
+ *   없음
  */
 void read_requesthdrs(rio_t *rp);
 
 /*
- * parse_uri - Parse URI into filename and CGI args
+ * parse_uri - URI를 파일 이름과 CGI 인수로 파싱합니다.
  *
- * Given a URI, parse_uri extracts the filename and CGI arguments (if any)
- * and stores them in the provided filename and cgiargs buffers.
+ * 주어진 URI에서 파일 이름과 CGI 인수(있는 경우)를 추출하고,
+ * 제공된 파일 이름 및 cgiargs 버퍼에 저장합니다.
  *
- * Parameters:
- *   uri: The URI to parse
- *   filename: Buffer to store the extracted filename
- *   cgiargs: Buffer to store the extracted CGI arguments
+ * 매개변수:
+ *   uri: 파싱할 URI
+ *   filename: 추출된 파일 이름을 저장할 버퍼
+ *   cgiargs: 추출된 CGI 인수를 저장할 버퍼
  *
- * Returns:
- *   -1 if the URI is invalid or contains errors, 0 otherwise
+ * 반환값:
+ *   URI가 잘못되었거나 오류가 포함되어 있는 경우 -1을 반환하고, 그렇지 않으면 0을 반환합니다.
  */
 int parse_uri(char *uri, char *filename, char *cgiargs);
 
 /*
- * serve_static - Serve a static content file to the client
+ * serve_static - 정적 콘텐츠 파일을 클라이언트에 제공합니다.
  *
- * Serve a static content file specified by filename to the client
- * using the provided file descriptor. This function reads the
- * contents of the file and sends it to the client using the given
- * file descriptor.
+ * 주어진 파일 이름으로 지정된 정적 콘텐츠 파일을 클라이언트에 제공합니다.
+ * 이 함수는 파일의 내용을 읽어들이고 주어진 파일 디스크립터를 사용하여 클라이언트에게 보냅니다.
  *
- * Parameters:
- *   fd: File descriptor of the client connection
- *   filename: Name of the static content file to serve
- *   filesize: Size of the file to serve
+ * 매개변수:
+ *   fd: 클라이언트 연결의 파일 디스크립터
+ *   filename: 제공할 정적 콘텐츠 파일의 이름
+ *   filesize: 제공할 파일의 크기
+ *   method: HTTP 요청 메서드 (GET, HEAD) // 11.11
  *
- * Returns:
- *   None
+ * 반환값:
+ *   없음
  */
-void serve_static(int fd, char *filename, int filesize);
+void serve_static(int fd, char *filename, int filesize, char *method, char *version);
 
 /*
- * get_filetype - Determine the content type of a file based on its extension
+ * get_filetype - 확장자에 기반하여 파일의 콘텐츠 유형을 결정합니다.
  *
- * Determine the content type of the file specified by filename based on
- * its extension. The determined content type is stored in the filetype buffer.
+ * 주어진 파일 이름에 있는 확장자를 기반으로 파일의 콘텐츠 유형을 결정합니다.
+ * 결정된 콘텐츠 유형은 filetype 버퍼에 저장됩니다.
  *
- * Parameters:
- *   filename: Name of the file to determine the content type for
- *   filetype: Buffer to store the determined content type
+ * 매개변수:
+ *   filename: 콘텐츠 유형을 결정할 파일 이름
+ *   filetype: 결정된 콘텐츠 유형을 저장할 버퍼
  *
- * Returns:
- *   None
+ * 반환값:
+ *   없음
  */
 void get_filetype(char *filename, char *filetype);
 
 /*
- * serve_dynamic - Serve dynamic content to the client
+ * serve_dynamic - 동적 콘텐츠를 클라이언트에 제공합니다.
  *
- * Serve dynamic content specified by filename and CGI arguments to the client
- * using the provided file descriptor. This function executes the specified
- * dynamic content program and sends its output to the client using the given
- * file descriptor.
+ * 주어진 파일 이름과 CGI 인수를 사용하여 동적 콘텐츠를 클라이언트에 제공합니다.
+ * 이 함수는 지정된 동적 콘텐츠 프로그램을 실행하고 그 출력을 주어진 파일 디스크립터를 사용하여 클라이언트에게 보냅니다.
  *
- * Parameters:
- *   fd: File descriptor of the client connection
- *   filename: Name of the dynamic content program to execute
- *   cgiargs: Arguments to pass to the dynamic content program
+ * 매개변수:
+ *   fd: 클라이언트 연결의 파일 디스크립터
+ *   filename: 실행할 동적 콘텐츠 프로그램의 이름
+ *   cgiargs: 동적 콘텐츠 프로그램에 전달할 인수
+ *   method: HTTP 요청 메서드 (GET, HEAD) // 11.11
  *
- * Returns:
- *   None
+ * 반환값:
+ *   없음
  */
-void serve_dynamic(int fd, char *filename, char *cgiargs);
+void serve_dynamic(int fd, char *filename, char *cgiargs, char *method, char *version);
 
 /*
- * clienterror - Send an error message to the client
+ * clienterror - 클라이언트에게 오류 메시지를 전송합니다.
  *
- * Send an error message with the specified cause, error number, short message,
- * and long message to the client using the provided file descriptor.
+ * 지정된 원인, 오류 번호, 짧은 메시지 및 긴 메시지로 오류 메시지를 클라이언트에게 전송합니다.
+ *
+ * 매개변수:
+ *   fd: 클라이언트 연결의 파일 디스크립터
+ *   cause: 오류의 원인
+ *   errnum: 오류 번호
+ *   shortmsg: 짧은 오류 메시지
+ *   longmsg: 긴 오류 메시지
+ *
+ * 반환값:
+ *   없음
+ */
+void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg, char *version); /* 11.6 C */
+
+/* 11.8 */
+/*
+ * sigchild_handler - SIGCHLD 시그널을 처리하는 핸들러 함수
+ *
+ * 이 함수는 SIGCHLD 시그널을 처리하여 자식 프로세스의 종료를 감지하고 처리합니다.
  *
  * Parameters:
- *   fd: File descriptor of the client connection
- *   cause: Cause of the error
- *   errnum: Error number
- *   shortmsg: Short error message
- *   longmsg: Long error message
- *
- * Returns:
- *   None
+ *   - sig: 핸들러가 처리하는 시그널
  */
-void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg);
+void sigchild_handler(int sig);
 
 int main(int argc, char **argv)
 {
@@ -138,6 +144,10 @@ int main(int argc, char **argv)
     exit(1);
   }
 
+  /* 11.8 */                                        // SIGCHLD 시그널을 처리하기 위한 시그널 핸들러를 설정합니다.
+  if (Signal(SIGCHLD, sigchild_handler) == SIG_ERR) // 이 핸들러는 자식 프로세스가 종료될 때 발생하는 시그널을 처리합니다.
+    unix_error("signal child handler error");       // 만약 핸들러 설정에 실패하면 오류 메시지를 출력합니다.
+
   listenfd = Open_listenfd(argv[1]);
   while (1) // 무한 루프 시작
   {
@@ -148,6 +158,23 @@ int main(int argc, char **argv)
     doit(connfd);                                                                   // 요청 처리 함수 호출 // 트랜잭션을 수행
     Close(connfd);                                                                  // 연결 소켓 닫기
   }
+}
+
+void sigchild_handler(int sig)
+{
+  // 현재의 errno 값을 저장하여 나중에 복원할 수 있도록 합니다.
+  int old_errno = errno;
+  int status;
+  pid_t pid;
+
+  // 모든 종료된 자식 프로세스를 비동기적으로 대기합니다.
+  while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+  {
+    // 자식 프로세스가 종료될 때마다 해당 프로세스의 PID를 반환하고 루프를 통해 모든 종료된 자식 프로세스를 대기합니다.
+  }
+
+  // 이전에 저장된 errno 값을 복원합니다.
+  errno = old_errno;
 }
 
 void doit(int fd) // 한 개의 HTTP 트랜잭션을 처리한다
@@ -165,9 +192,10 @@ void doit(int fd) // 한 개의 HTTP 트랜잭션을 처리한다
   printf("%s", buf);                             // 읽은 요청 헤더 출력
   sscanf(buf, "%s %s %s", method, uri, version); // 요청 라인 파싱
 
-  if (strcasecmp(method, "GET")) // GET 이외의 메소드는 에러 메세지를 띄운다 (0이 아닌값은 참으로 간주하기 때문)
+  /* 11.11 */
+  if (!(strcasecmp(method, "GET") == 0 || strcasecmp(method, "HEAD") == 0)) // GET과 HEAD 메소드만 지원
   {
-    clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method");
+    clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method", version); /* 11.6 C */
     return;
   }
   read_requesthdrs(&rio); // 요청 헤더 읽기
@@ -176,7 +204,7 @@ void doit(int fd) // 한 개의 HTTP 트랜잭션을 처리한다
   is_static = parse_uri(uri, filename, cgiargs); // URI 파싱
   if (stat(filename, &sbuf) < 0)                 // 파일 정보 읽기
   {
-    clienterror(fd, filename, "404", "Not found", "Tiny couldn't find this file");
+    clienterror(fd, filename, "404", "Not found", "Tiny couldn't find this file", version); /* 11.6 C */
     return;
   }
 
@@ -184,24 +212,24 @@ void doit(int fd) // 한 개의 HTTP 트랜잭션을 처리한다
   {                                                            // 파일이 일반 파일인지 확인 || 파일 접근 권한 확인
     if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode)) // S_ISREG 파일이 일반 파일이면 1 아니면 0반환, S_IRUSR 사용자의 읽기 권한을 나타내는 flag
     {
-      clienterror(fd, filename, "403", "Forbidden", "Tiny couldn't read the file");
+      clienterror(fd, filename, "403", "Forbidden", "Tiny couldn't read the file", version); /* 11.6 C */
       return;
     }
-    serve_static(fd, filename, sbuf.st_size); // 정적 컨텐츠 서비스
+    serve_static(fd, filename, sbuf.st_size, method, version); // 정적 컨텐츠 서비스 /* 11.11 */ /* 11.6 C */
   }
   else /* Serve dynamic content */ /* 동적 컨텐츠 제공 */
   {
     if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) // S_ISREG 파일이 일반 파일이면 1 아니면 0반환, S_IXUSR 사용자의 실행 권한을 나타내는 flag
     {
-      clienterror(fd, filename, "403", "Forbidden", "Tiny couldn't run the CGI program");
+      clienterror(fd, filename, "403", "Forbidden", "Tiny couldn't run the CGI program", version); /* 11.6 C */
       return;
     }
-    serve_dynamic(fd, filename, cgiargs); // 동적 컨텐츠 서비스
+    serve_dynamic(fd, filename, cgiargs, method, version); // 동적 컨텐츠 서비스 /* 11.11 */ /* 11.6 C */
   }
 }
 
 // 클라이언트한테 에러 메세지 전송
-void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg)
+void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg, char *version) /* 11.6 C */
 {
   char buf[MAXLINE], body[MAXBUF];
 
@@ -215,8 +243,8 @@ void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longms
   sprintf(body, "%s<p>%s: %s\r\n", body, longmsg, cause);
   sprintf(body, "%s<hr><em>The Tiny Web server</em>\r\n", body);
 
-  /* Print the HTTP response */ /* HTTP 응답 전송 */
-  sprintf(buf, "HTTP/1.0 %s %s\r\n", errnum, shortmsg);
+  /* Print the HTTP response */                            /* HTTP 응답 전송 */
+  sprintf(buf, "%s %s %s\r\n", version, errnum, shortmsg); /* 11.6 C */
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Content-type: text/html\r\n");
   Rio_writen(fd, buf, strlen(buf));
@@ -275,14 +303,14 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
   }
 }
 
-void serve_static(int fd, char *filename, int filesize) // 동적 컨텐츠 출력
+void serve_static(int fd, char *filename, int filesize, char *method, char *version) // 정적 컨텐츠 출력 /* 11.11 *//* 11.6 C */
 {
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
 
   /* Send response headers to client */
-  get_filetype(filename, filetype);
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  get_filetype(filename, filetype);       /* 11.6 C */
+  sprintf(buf, "%s 200 OK\r\n", version); /* 11.6 C */
   sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
   sprintf(buf, "%sConnection: close\r\n", buf);
   sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);
@@ -291,13 +319,38 @@ void serve_static(int fd, char *filename, int filesize) // 동적 컨텐츠 출�
   printf("Response headers:\n");
   printf("%s", buf);
 
+  /* 11.11 */
+  /* 만약 HTTP 요청 메서드가 "HEAD"일 경우, */ // HEAD 메서드일 때, 서버는 실제 리소스 본문을 제외한 응답 헤더만을 전송한다.(메타데이터만을 요청한다.)
+  if (strcasecmp(method, "HEAD") == 0)         // 따라서 아래 응답 바디는 출력하지 않고 종료
+    return;
+
   /* Send response body to client */
-  srcfd = Open(filename, O_RDONLY, 0);
-  srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
+  srcfd = Open(filename, O_RDONLY, 0); // O_RDONLY 파일을 읽기 전용으로 열려고 할 때 사용하는 플래그
+  // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0); // PROT_READ 페이지에 대한 읽기 권한을 허용하는 플래그 // MAP_PRIVATE 매핑된 메모리 영역이 다른 프로세스와 공유되지 않음을 지정하는 플래그
+  srcp = (char *)Malloc(filesize);  /* 11.9 */
+  Rio_readn(srcfd, srcp, filesize); /* 11.9 */
   Close(srcfd);
   Rio_writen(fd, srcp, filesize);
-  Munmap(srcp, filesize);
+  // Munmap(srcp, filesize);
+  free(srcp); /* 11.9 */
 }
+
+/** 11.9
+ * mmap() / munmap() 과 malloc() / free()
+ *
+ * - 파일 접근 방식:
+ *    mmap(): 파일을 메모리에 매핑하여 메모리를 파일의 내용으로 채운다. 이 경우 파일의 내용을 직접 메모리에서 읽거나 쓸 수 있다.
+ *    malloc(): 메모리를 동적으로 할당하고, 해당 메모리 공간은 파일과 직접적으로 연결되어 있지 않다.
+ * - 동작 방식:
+ *    mmap(): 파일을 메모리에 매핑하면 파일의 내용이 메모리에 로드된다. 이로 인해 파일의 내용을 읽거나 쓰는 데에는 파일을 직접 참조할 수 있다. 수정된 데이터는 바로 파일에 반영된다.
+ *    malloc(): 메모리를 할당하면 빈 메모리 블록이 생성되며, 파일의 내용을 직접 메모리에 로드하지 않는다. 파일의 내용을 읽거나 쓰려면 별도의 파일 I/O 작업이 필요하다.
+ * - 용도:
+ *    mmap(): 대용량 파일을 메모리에 매핑하여 메모리 매핑 I/O를 수행할 때 유용하다. 특히 대용량 파일을 효율적으로 처리해야 하는 경우나 파일을 수정해야 하는 경우에 사용한다.
+ *    malloc(): 작은 크기의 메모리 블록을 할당하고 해제할 때 주로 사용된다. 주로 일반적인 메모리 할당 및 해제 작업에 사용된다.
+ * - 메모리 해제:
+ *    munmap(): mmap() 함수로 매핑된 메모리 영역을 해제한다.
+ *    free(): malloc() 함수로 할당된 메모리 블록을 해제한다.
+ */
 
 /*
  * get_filetype - Derive file type from filename
@@ -312,24 +365,27 @@ void get_filetype(char *filename, char *filetype) // MIME 타입 확인 후 반�
     strcpy(filetype, "image/png");
   else if (strstr(filename, ".jpg"))
     strcpy(filetype, "image/jpeg");
+  else if (strstr(filename, ".mpeg")) /* 11.7 */
+    strcpy(filetype, "image/mpeg");
   else
     strcpy(filetype, "text/plain");
 }
 
-void serve_dynamic(int fd, char *filename, char *cgiargs)
+void serve_dynamic(int fd, char *filename, char *cgiargs, char *method, char *version) // 동적 컨텐츠 출력 /* 11.11 */ /* 11.6 C */
 {
   char buf[MAXLINE], *emptylist[] = {NULL};
 
   /* Return first part of HTTP response */
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  sprintf(buf, "%s 200 OK\r\n", version); /* 11.6 C */
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));
 
-  if (Fork() == 0)
-  { /* Child */
+  if (Fork() == 0) /* Child */
+  {
     /* Real server would set all CGI vars here */
-    setenv("QUERY_STRING", cgiargs, 1);
+    setenv("QUERY_STRING", cgiargs, 1);   // QUERY_STRING에 cgi인자를 덮어 씌운다
+    setenv("REQUEST_METHOD", method, 1);  // REQUEST_METHOD에 클라이언트가 요청한 method를 덮어 씌운다 /* 11.11 */
     Dup2(fd, STDOUT_FILENO);              /* Redirect stdout to client */
     Execve(filename, emptylist, environ); /* Run CGI program */
   }
@@ -522,4 +578,20 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
  *   - 성공하면 종료한 자식 프로세스의 프로세스 ID를 반환하고, 실패하면 -1을 반환합니다.
  *
  * pid_t wait(int *status);
+ */
+
+/*
+ * open - 파일을 열거나 생성하는 함수
+ *
+ * filename 경로에 있는 파일을 열거나 생성합니다.
+ *
+ * Parameters:
+ *   - filename: 열거나 생성할 파일의 경로 및 이름
+ *   - flags: 파일을 열거나 생성할 때의 옵션을 지정합니다. 여기에는 파일을 읽기 전용으로 열거나 쓰기 전용으로 열거나 새로운 파일을 생성하는 등의 옵션이 포함됩니다.
+ *   - mode: 파일을 생성할 때 사용되는 파일의 권한을 지정합니다. 파일을 열 때는 이 매개변수를 무시합니다.
+ *
+ * Returns:
+ *   - 파일 디스크립터를 반환합니다. 실패할 경우 -1을 반환하고, errno 변수에 오류 코드가 설정됩니다.
+ *
+ * int open(const char *filename, int flags, mode_t mode);
  */
